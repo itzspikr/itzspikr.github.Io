@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoVerse AI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #030712;
+        }
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        .nav-link.active {
+            background-color: #0ea5e9; /* sky-500 */
+            color: white;
+        }
+        .character-card.active {
+            border-color: #0ea5e9;
+            background-color: #083344;
+            transform: scale(1.05);
+        }
+        .hub-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .hub-card:hover {
+            transform: translateY(-5px);
+            border-color: #0ea5e9;
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <!-- Login Overlay -->
+    <div id="login-view" class="fixed inset-0 bg-gray-950 z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-md p-8 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700 text-center">
+            <h1 class="text-4xl font-bold mb-2">EchoVerse <span class="text-sky-400">AI</span></h1>
+            <p class="text-gray-400 mb-8">سجل دخولك (تجريبياً) للوصول إلى مركز الإبداع.</p>
+            <form id="login-form">
+                <input type="text" id="username-input" placeholder="أدخل أي اسم للمتابعة" class="w-full p-3 mb-4 bg-gray-800 rounded-lg border border-gray-600 focus:ring-2 focus:ring-sky-500 text-center" required>
+                <button type="submit" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 rounded-lg transition-transform duration-300 hover:scale-105">الدخول</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Structure -->
+    <div id="app-view" class="hidden">
+        <div class="relative min-h-screen bg-gray-950">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="bg-gray-900 text-white w-64 fixed top-0 bottom-0 z-40 transform translate-x-full">
+                <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                    <a href="#" data-view="home-view" class="text-2xl font-bold text-white nav-link-header">EchoVerse <span class="text-sky-400">AI</span></a>
+                     <button id="close-sidebar-btn" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times fa-lg"></i>
+                    </button>
+                </div>
+                <nav class="mt-4">
+                    <a href="#" data-view="home-view" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800">
+                        <i class="fas fa-th-large ml-4 w-6 text-center"></i><span>مركز التحكم</span>
+                    </a>
+                    <a href="#" data-view="voice-generator-view" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800">
+                        <i class="fas fa-magic-wand-sparkles ml-4 w-6 text-center"></i><span>توليد الصوت</span>
+                    </a>
+                    <a href="#" data-view="image-generator-view" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800">
+                        <i class="fas fa-image ml-4 w-6 text-center"></i><span>توليد الصور</span>
+                    </a>
+                </nav>
+            </aside>
+            
+            <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden"></div>
+
+            <div class="flex-1 flex flex-col">
+                <header class="bg-gray-900 shadow-md">
+                    <div class="container mx-auto flex items-center p-4">
+                        <button id="menu-toggle-btn" class="text-white focus:outline-none ml-4">
+                            <i class="fas fa-bars fa-lg"></i>
+                        </button>
+                        <div class="flex-grow"></div>
+                    </div>
+                </header>
+
+                <main id="main-content" class="flex-1 p-4 md:p-8">
+                    <!-- Views will be dynamically injected here -->
+                </main>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View Templates -->
+    <template id="template-home-view">
+         <div id="home-view" class="view">
+            <h1 id="welcome-message" class="text-4xl font-bold mb-2 text-center"></h1>
+            <p class="text-lg text-gray-400 mb-8 text-center">اختر أداة من مركز التحكم للبدء.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div data-view="voice-generator-view" class="hub-card bg-gray-900 p-8 rounded-xl border-2 border-gray-700 text-center cursor-pointer">
+                    <i class="fas fa-magic-wand-sparkles fa-3x mb-4 text-sky-400"></i>
+                    <h2 class="text-2xl font-bold">توليد الصوت</h2>
+                    <p class="text-gray-400 mt-2">حوّل النص إلى تعليق صوتي احترافي.</p>
+                </div>
+                <div data-view="image-generator-view" class="hub-card bg-gray-900 p-8 rounded-xl border-2 border-gray-700 text-center cursor-pointer">
+                    <i class="fas fa-image fa-3x mb-4 text-pink-400"></i>
+                    <h2 class="text-2xl font-bold">توليد الصور</h2>
+                    <p class="text-gray-400 mt-2">حوّل أفكارك إلى صور فنية (قيد التطوير).</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="template-voice-generator-view">
+        <div id="voice-generator-view" class="view">
+            <div class="flex items-center mb-6">
+                 <button class="back-to-hub-btn text-gray-400 hover:text-white transition-colors flex items-center">
+                    <i class="fas fa-arrow-right ml-2"></i>
+                    <span>العودة للمركز</span>
+                </button>
+                <h1 class="text-4xl font-bold mr-auto">أداة توليد الصوت</h1>
+            </div>
+            <div class="bg-gray-900 p-8 rounded-xl border border-gray-800 max-w-3xl mx-auto">
+                 <div class="mb-6">
+                    <label class="block text-right mb-4 font-semibold text-gray-300">اختر الشخصية:</label>
+                    <div id="character-container" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                </div>
+                <div class="mb-6">
+                    <label for="text-input" class="block text-right mb-2 font-semibold text-gray-300">أدخل النص:</label>
+                    <textarea id="text-input" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 text-white text-lg focus:ring-2 focus:ring-sky-500"></textarea>
+                </div>
+                <button id="generate-voice-btn" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 rounded-lg text-xl">
+                    <span id="voice-btn-text"><i class="fas fa-play mr-2"></i> توليد واستماع</span>
+                    <span id="voice-btn-loader" class="hidden"><i class="fas fa-spinner fa-spin mr-2"></i> جاري التوليد...</span>
+                </button>
+                 <div id="voice-result-container" class="mt-6 hidden">
+                    <h3 class="text-lg font-semibold text-right mb-2">النتيجة:</h3>
+                    <audio id="audio-player" controls class="w-full rounded-lg"></audio>
+                    <a id="download-link" href="#" download="echoverse_ai_audio.mp3" class="w-full mt-3 block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg">
+                        <i class="fas fa-download mr-2"></i> تحميل ملف MP3
+                    </a>
+                </div>
+                <p id="voice-error-message" class="text-red-400 bg-red-900/50 p-3 rounded-lg text-center mt-4 hidden"></p>
+            </div>
+        </div>
+    </template>
+    
+     <template id="template-image-generator-view">
+         <div id="image-generator-view" class="view">
+             <div class="flex items-center mb-6">
+                <button class="back-to-hub-btn text-gray-400 hover:text-white transition-colors flex items-center">
+                    <i class="fas fa-arrow-right ml-2"></i>
+                    <span>العودة للمركز</span>
+                </button>
+                <h1 class="text-4xl font-bold mr-auto">أداة توليد الصور</h1>
+            </div>
+            <div class="bg-gray-900 p-8 rounded-xl border border-gray-800 max-w-3xl mx-auto">
+                <label for="image-prompt-input" class="block text-right mb-2 font-semibold text-gray-300">أدخل وصف الصورة:</label>
+                <textarea id="image-prompt-input" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-pink-500"></textarea>
+                <button id="generate-image-btn" class="w-full mt-4 bg-gray-600 text-gray-400 font-bold py-3 rounded-lg cursor-not-allowed">توليد</button>
+                <p id="image-dev-message" class="text-yellow-400 text-center mt-4 hidden"><i class="fas fa-exclamation-triangle mr-2"></i>الخدمة قيد التطوير حالياً.</p>
+            </div>
+        </div>
+     </template>
+
+
+    <script>
+    // --- DOM ELEMENTS ---
+    const loginView = document.getElementById('login-view');
+    const appView = document.getElementById('app-view');
+    const loginForm = document.getElementById('login-form');
+    const usernameInput = document.getElementById('username-input');
+    
+    const sidebar = document.getElementById('sidebar');
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const mainContent = document.getElementById('main-content');
+    
+    // --- VOICE GENERATOR LOGIC ---
+    const characters = [
+        { id: 'karim', name: 'كريم', icon: 'fa-male', voice: 'Naayf' },
+        { id: 'layla', name: 'ليلى', icon: 'fa-female', voice: 'Hoda' },
+        { id: 'omar', name: 'عمر', icon: 'fa-male', voice: 'ar-XA-Wavenet-B' },
+        { id: 'fatima', name: 'فاطمة', icon: 'fa-female', voice: 'ar-XA-Wavenet-A' }
+    ];
+    let activeCharacterId = 'karim';
+    
+    function setupCharacters(view) {
+        const characterContainer = view.querySelector('#character-container');
+        if (!characterContainer) return;
+        characterContainer.innerHTML = '';
+        characters.forEach(char => {
+            const card = document.createElement('div');
+            card.className = 'character-card bg-gray-800 text-white border-2 border-gray-700 rounded-lg p-4 text-center cursor-pointer transition-all duration-300';
+            card.dataset.id = char.id;
+            card.innerHTML = `<i class="fas ${char.icon} fa-2x mb-2 text-gray-400 char-icon"></i><p class="font-semibold char-name">${char.name}</p>`;
+            if (char.id === activeCharacterId) card.classList.add('active');
+            card.addEventListener('click', () => {
+                activeCharacterId = char.id;
+                view.querySelectorAll('.character-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+            });
+            characterContainer.appendChild(card);
+        });
+    }
+
+    async function generateCloudAudio(view) {
+        const textInput = view.querySelector('#text-input');
+        const generateVoiceBtn = view.querySelector('#generate-voice-btn');
+        const voiceBtnText = view.querySelector('#voice-btn-text');
+        const voiceBtnLoader = view.querySelector('#voice-btn-loader');
+        const voiceResultContainer = view.querySelector('#voice-result-container');
+        const voiceErrorMessage = view.querySelector('#voice-error-message');
+        const audioPlayer = view.querySelector('#audio-player');
+        const downloadLink = view.querySelector('#download-link');
+
+        const text = textInput.value.trim();
+        if (!text) { showVoiceError("الرجاء إدخال نص أولاً.", voiceErrorMessage); return; }
+        
+        showVoiceError('', voiceErrorMessage);
+        generateVoiceBtn.disabled = true;
+        voiceBtnText.classList.add('hidden');
+        voiceBtnLoader.classList.remove('hidden');
+        voiceResultContainer.classList.add('hidden');
+
+        try {
+            const activeCharacter = characters.find(c => c.id === activeCharacterId);
+            const apiUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${activeCharacter.voice}&text=${encodeURIComponent(text)}`;
+            
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`فشل الخادم (Status: ${response.status})`);
+            
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            audioPlayer.src = audioUrl;
+            downloadLink.href = audioUrl;
+            voiceResultContainer.classList.remove('hidden');
+            
+        } catch (error) {
+            console.error("Audio generation error:", error);
+            showVoiceError(error.message || "حدث خطأ غير متوقع.", voiceErrorMessage);
+        } finally {
+            generateVoiceBtn.disabled = false;
+            voiceBtnText.classList.remove('hidden');
+            voiceBtnLoader.classList.add('hidden');
+        }
+    }
+    
+    function showVoiceError(message, element) {
+        element.textContent = message;
+        element.classList.toggle('hidden', !message);
+    }
+    
+    // --- NAVIGATION AND APP FLOW ---
+    function showView(viewId) {
+        mainContent.innerHTML = '';
+        const template = document.getElementById(`template-${viewId}`);
+        if(template) {
+            const viewContent = template.content.cloneNode(true);
+            mainContent.appendChild(viewContent);
+            
+            // Re-attach event listeners for the new view
+            attachEventListenersToView(mainContent, viewId);
+        }
+        
+        navLinks.forEach(link => {
+            link.classList.toggle('active', link.dataset.view === viewId);
+        });
+        
+        closeSidebar();
+    }
+    
+    function attachEventListenersToView(viewContainer, viewId) {
+        // Attach listener for the back button
+        const backButton = viewContainer.querySelector('.back-to-hub-btn');
+        if (backButton) {
+            backButton.addEventListener('click', () => showView('home-view'));
+        }
+
+        if(viewId === 'home-view'){
+             const welcomeMessage = viewContainer.querySelector('#welcome-message');
+             if(welcomeMessage) welcomeMessage.textContent = `مرحباً بك، ${localStorage.getItem('userName') || 'يا مبدع'}!`;
+             
+             viewContainer.querySelectorAll('.hub-card').forEach(card => {
+                card.addEventListener('click', (e) => showView(e.currentTarget.dataset.view));
+             });
+        }
+        if (viewId === 'voice-generator-view') {
+            setupCharacters(viewContainer);
+            const generateVoiceBtn = viewContainer.querySelector('#generate-voice-btn');
+            if(generateVoiceBtn) generateVoiceBtn.addEventListener('click', () => generateCloudAudio(viewContainer));
+        }
+        if (viewId === 'image-generator-view') {
+            const generateImageBtn = viewContainer.querySelector('#generate-image-btn');
+            const imageDevMessage = viewContainer.querySelector('#image-dev-message');
+            if(generateImageBtn) generateImageBtn.addEventListener('click', () => imageDevMessage.classList.remove('hidden'));
+        }
+    }
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userName = usernameInput.value.trim();
+        localStorage.setItem('userName', userName);
+        loginView.classList.add('hidden');
+        appView.classList.remove('hidden');
+        showView('home-view');
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            showView(e.currentTarget.dataset.view);
+        });
+    });
+    
+    document.querySelector('.nav-link-header').addEventListener('click', (e) => {
+        e.preventDefault();
+        showView('home-view');
+    });
+    
+    function openSidebar() {
+        sidebar.classList.remove('translate-x-full');
+        sidebarBackdrop.classList.remove('hidden');
+    }
+    
+    function closeSidebar() {
+         sidebar.classList.add('translate-x-full');
+        sidebarBackdrop.classList.add('hidden');
+    }
+
+    menuToggleBtn.addEventListener('click', openSidebar);
+    closeSidebarBtn.addEventListener('click', closeSidebar);
+    sidebarBackdrop.addEventListener('click', closeSidebar);
+
+    </script>
+</body>
+</html>
